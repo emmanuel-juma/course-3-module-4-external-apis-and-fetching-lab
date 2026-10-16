@@ -37,9 +37,7 @@ function displayAlerts(data, state) {
 
   // Create the summary
   const summary = document.createElement("h2");
-  summary.textContent =
-    `Current watches, warnings, and advisories for ${state}: ${data.features.length}`;
-
+  summary.textContent = `Weather Alerts: ${data.features.length}`;
   alertsDisplay.appendChild(summary);
 
   // Create a list of alert headlines
