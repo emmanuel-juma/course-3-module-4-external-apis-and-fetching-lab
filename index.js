@@ -2,17 +2,16 @@
 const weatherApi = "https://api.weather.gov/alerts/active?area="
 
 // Your code here!
-const form = document.querySelector("form");
-const stateInput = document.querySelector("#state");
-const alertsContainer = document.querySelector("#weather-alerts");
-const errorMessage = document.querySelector("#error-message");
+const stateInput = document.getElementById("state-input");
+const fetchButton = document.getElementById("fetch-alerts");
+const alertsDisplay = document.getElementById("alerts-display");
+const errorMessage = document.getElementById("error-message");
 
-// Fetch weather alerts for a state
 function fetchWeatherAlerts(state) {
   fetch(`https://api.weather.gov/alerts/active?area=${state}`)
     .then((response) => {
       if (!response.ok) {
-        throw new Error(`API request failed: ${response.status}`);
+        throw new Error(`Request failed: ${response.status}`);
       }
 
       return response.json();
@@ -20,66 +19,61 @@ function fetchWeatherAlerts(state) {
     .then((data) => {
       console.log(data);
       displayAlerts(data, state);
+
+      errorMessage.textContent = "";
+      errorMessage.classList.add("hidden");
     })
     .catch((error) => {
       console.log(error.message);
-      showError(error.message);
+
+      errorMessage.textContent = error.message;
+      errorMessage.classList.remove("hidden");
     });
 }
 
-// Display the weather alerts
 function displayAlerts(data, state) {
-  // Clear previous results and errors
-  alertsContainer.innerHTML = "";
-  errorMessage.textContent = "";
-  errorMessage.hidden = true;
+  // Clear previous alerts
+  alertsDisplay.innerHTML = "";
 
   // Create the summary
   const summary = document.createElement("h2");
-  summary.textContent = `${data.title} for ${state}: ${data.features.length}`;
+  summary.textContent =
+    `Current watches, warnings, and advisories for ${state}: ${data.features.length}`;
 
-  alertsContainer.appendChild(summary);
+  alertsDisplay.appendChild(summary);
 
   // Create a list of alert headlines
   const alertList = document.createElement("ul");
 
   data.features.forEach((alert) => {
-    const listItem = document.createElement("li");
-    listItem.textContent =
+    const li = document.createElement("li");
+    li.textContent =
       alert.properties.headline || "Headline unavailable";
 
-    alertList.appendChild(listItem);
+    alertList.appendChild(li);
   });
 
-  alertsContainer.appendChild(alertList);
+  alertsDisplay.appendChild(alertList);
 }
 
-// Display errors
-function showError(message) {
-  alertsContainer.innerHTML = "";
-  errorMessage.textContent = message;
-  errorMessage.hidden = false;
-}
-
-// Handle form submission
-form.addEventListener("submit", (event) => {
-  event.preventDefault();
-
+fetchButton.addEventListener("click", () => {
   const state = stateInput.value.trim().toUpperCase();
 
-  // Clear old results and the input field
-  alertsContainer.innerHTML = "";
+  // Clear the input after clicking
   stateInput.value = "";
 
-  // Validate input
+  // Clear previous alerts and errors
+  alertsDisplay.innerHTML = "";
+  errorMessage.textContent = "";
+  errorMessage.classList.add("hidden");
+
+  // Validate the state abbreviation
   if (!/^[A-Z]{2}$/.test(state)) {
-    showError("Please enter a valid two-letter state abbreviation.");
+    errorMessage.textContent =
+      "Please enter a valid two-letter state abbreviation.";
+    errorMessage.classList.remove("hidden");
     return;
   }
-
-  // Hide any previous error
-  errorMessage.textContent = "";
-  errorMessage.hidden = true;
 
   fetchWeatherAlerts(state);
 });
